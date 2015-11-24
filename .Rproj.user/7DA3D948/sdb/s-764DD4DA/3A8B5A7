@@ -1,0 +1,17 @@
+{
+    "contents" : "library(jiebaR)\n\ninputFile <- file.path(\".\", \"honglou.txt\")\noutputFile <- file.path(\".\", \"honglou-words.txt\")\n\n# Load the raw Hongloumeng text\ntext <- readLines(inputFile, encoding = \"UTF-8\")\ntext <- text[!text == \"\"]\nlines <- strsplit(text, \"\\r\\n\")\n\n# Find the chapter title\nchapsLineNum <- sapply(lines, function(line) grep(\"^\\u7b2c\", line[1]))\nchapsLineNum <- sapply(1:length(chapsLineNum), function(i) ifelse(chapsLineNum[[i]] == 1, i, NA))\nchapsLineNum <- Filter(function(x) x[1] > 0, chapsLineNum)\n\n# Front 80 chapters and Behind 40 chapters\nchapsLineNumPrev <- chapsLineNum[1:80]\nchapsLineNumNext <- chapsLineNum[81:120]\n\ntestChapsLineNum <- chapsLineNum[77:85]\n\n# Ignore the punctuations\nignoreChar <- c(\"\\u3000\", \"\\uff1a\", \"\\uff1f\", \"\\uff1b\", \"\\u201c\", \"\\u201d\", \"\\u3002\", \"\\uff0c\", \"\\u2026\", \"\\u2500\", \"\\u3001\", \"\\u300a\", \"\\u300b\", \"\\uff01\")\nignore <- function(s) {\n  for (i in 1:length(ignoreChar)) {\n    s <- gsub(ignoreChar[i], \" \", s)\n  }\n  \n  return(s)\n}\n\n# Segment the text\nsapply(1:(length(testChapsLineNum) - 1), function(i) {\n  end <- length(lines)\n  if ((i + 1) <= length(testChapsLineNum)) {\n    end <- testChapsLineNum[[i + 1]] - 1\n  }\n  \n  thisLines <- lines[testChapsLineNum[[i]]:end]\n  thisLines.tags <- sapply(thisLines, function(line) {\n    mixseg = worker()\n    # Segment\n    tags <- mixseg <= ignore(line)\n\n    write(paste(tags, collapse = \",\"), outputFile, append = TRUE)\n    return(tags)\n  })\n  \n  write(\"#\", outputFile, append = TRUE)\n})\n",
+    "created" : 1448091389468.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1793762047",
+    "id" : "3A8B5A7",
+    "lastKnownWriteTime" : 1448110665,
+    "path" : "~/Dropbox/Code/Hongloumeng/honglou-preload.R",
+    "project_path" : "honglou-preload.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

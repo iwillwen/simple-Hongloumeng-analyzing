@@ -1,0 +1,17 @@
+{
+    "contents" : "library(ggplot2)\n\nfrequenciesFile <- file.path(\".\", \"honglou-words-frequencies.txt\")\noutputPDF <- file.path(\".\", \"honglou-output.pdf\")\n\n# Loading the words set processed by Go\nwords <- readLines(frequenciesFile, encoding = \"UTF-8\")\nwords <- strsplit(words, \"\\n\")\n\n# Find out the separations\nseps <- sapply(1:length(words), function(index) if (words[index] == \"---\") index)\nseps <- Filter(Negate(is.null), seps)\nseps <- append(c(0), seps)\n\n# Analyzing the frequencies of the words\nfrequencies <- list()\n\nprocess1 <- function(i, lastIndex) {\n  index <- seps[[i]]\n  words.in.chap <- c()\n  counts <- c()\n\n  start <- lastIndex + 1\n  end <- index - 1\n  tmp.words <- words[start:end]\n\n  for (ii in 1:length(tmp.words)) {\n    if (typeof(tmp.words[[ii]]) == \"character\") {\n      tuple <- strsplit(tmp.words[[ii]], \" \")[[1]]\n      words.in.chap <- append(words.in.chap, tuple[1])\n      counts <- append(counts, as.integer(tuple[2]))\n    }\n  }\n\n  df <- data.frame(Word = words.in.chap, Count = counts)\n  df <- df[ order(-df[,2]),  ]\n\n  return(df)\n}\n\nlastIndex <- 0\nfor (i in 2:length(seps)) {\n  lastIndex <- seps[i - 1][[1]]\n  rtn <- process1(i, lastIndex = lastIndex)\n  frequencies[[length(frequencies)+1]] <- rtn\n}\n\ndf <- data.frame(Word = c(), Count = c(), Chap = c())\n\n# Take the top 200 words from each chapters\n# and merge them into a data frame\nfor (i in 1:length(frequencies)) {\n  frequencies[[i]][\"Chap\"] <- i\n  df <- rbind(df, head(frequencies[[i]], 200))\n}\n\n# Drawing the outout graph\np <- ggplot(df, aes(x=Word, y=Count, color=Count, size= Count))\np <- p + facet_wrap(~Chap, nrow=2)\np <- p + geom_smooth(aes(group = 1), level = 0.9999) + geom_smooth(aes(group = 1), method=\"lm\")\np <- p + geom_point() + scale_y_log10()\np <- p + scale_x_discrete(labels=NULL)\np <- p + theme_bw(16)\np <- p + ggtitle(\"Hong Lou Meng - From Chapter 77 to Chapter 84\") + theme(plot.title = element_text(lineheight=1.2))\np <- p + ggsave(outputPDF, width=13, height=8.5)\n",
+    "created" : 1448091499200.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1446523379",
+    "id" : "C118D409",
+    "lastKnownWriteTime" : 1448110675,
+    "path" : "~/Dropbox/Code/Hongloumeng/honglou-words.R",
+    "project_path" : "honglou-words.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
